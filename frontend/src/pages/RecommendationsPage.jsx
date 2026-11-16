@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { recommendationAPI, shoppingListAPI, recipeAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import {
+  SparklesIcon,
+  ShoppingCartIcon,
+  ClockIcon,
+  FilterIcon,
+  UserIcon,
+  CheckIcon,
+  CloseIcon,
+  AlertCircleIcon,
+} from "../components/Icons";
 
 export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }) {
   const { user } = useAuth();
@@ -64,17 +74,16 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
     setActionError("");
 
     if (!targetListId) {
-      // Create a default list if none exists
       try {
         const createRes = await shoppingListAPI.create({ list_name: "Recipe Grocery List" });
         const newListId = createRes.data?.data?.list?.list_id;
         const res = await shoppingListAPI.generateFromRecipe(newListId, recipeId);
-        setActionSuccess(res.data?.message || "Missing ingredients added to shopping list!");
-        return;
+        setActionSuccess(res.data?.message || "Created list & added missing ingredients!");
+        loadRecommendations();
       } catch (err) {
-        setActionError("Failed to create shopping list");
-        return;
+        setActionError(err.response?.data?.message || "Failed to create list and add ingredients");
       }
+      return;
     }
 
     try {
@@ -88,7 +97,10 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
   if (!user) {
     return (
       <div className="auth-prompt-card">
-        <h2>✨ Smart Recipe Recommendations</h2>
+        <div className="auth-prompt-icon-wrap">
+          <SparklesIcon size={36} />
+        </div>
+        <h2>Smart Recipe Recommendations</h2>
         <p>Log in to discover recipes you can cook right now with what is inside your pantry!</p>
         <button className="primary-btn" onClick={onOpenAuth}>
           Sign In for Recommendations
@@ -101,20 +113,21 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
     <div className="recommendations-page">
       <div className="page-header">
         <div>
-          <h2>✨ Smart Recipe Recommendations</h2>
+          <div className="header-badge">Intelligent Matching</div>
+          <h2>Smart Recipe Matches</h2>
           <p className="subtitle">
-            Ranked intelligently by matching your actual pantry stock against recipe ingredient requirements.
+            Ranked dynamically by comparing your active pantry inventory against required ingredients.
           </p>
         </div>
 
         {/* Quick Shopping List Selector */}
         {shoppingLists.length > 0 && (
           <div className="target-list-picker">
-            <label>Add Missing Items To:</label>
+            <span className="picker-label">Target Shopping List:</span>
             <select
               value={targetListId}
               onChange={(e) => setTargetListId(e.target.value)}
-              className="select-input"
+              className="select-input compact"
             >
               {shoppingLists.map((l) => (
                 <option key={l.list_id} value={l.list_id}>
@@ -126,8 +139,18 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
         )}
       </div>
 
-      {actionSuccess && <div className="alert-success">{actionSuccess}</div>}
-      {actionError && <div className="alert-error">{actionError}</div>}
+      {actionSuccess && (
+        <div className="alert-success">
+          <CheckIcon size={16} />
+          <span>{actionSuccess}</span>
+        </div>
+      )}
+      {actionError && (
+        <div className="alert-error">
+          <AlertCircleIcon size={16} />
+          <span>{actionError}</span>
+        </div>
+      )}
 
       {/* Filter Bar */}
       <div className="filter-bar">
@@ -158,10 +181,12 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
 
       {/* Recommendations List */}
       {loading ? (
-        <div className="loading-state">Finding best recipe matches from your pantry...</div>
+        <div className="loading-state">Matching recipes against your kitchen stock...</div>
       ) : recommendations.length === 0 ? (
         <div className="empty-state">
-          <p>No recipes match the selected filters or your pantry has insufficient items.</p>
+          <SparklesIcon size={40} className="empty-state-icon" />
+          <h3>No matching recipes found</h3>
+          <p>Try adding more pantry items or relaxing category filters.</p>
         </div>
       ) : (
         <div className="recommendations-grid">
@@ -173,13 +198,13 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
                 className={`recommendation-card ${isFullMatch ? "full-match" : ""}`}
               >
                 <div className="rec-card-header">
-                  <div>
+                  <div className="rec-title-group">
                     <span className="category-pill">{rec.category?.category_name}</span>
-                    <h3>{rec.recipe_name}</h3>
+                    <h3 className="rec-recipe-name">{rec.recipe_name}</h3>
                   </div>
                   <div className={`coverage-badge ${isFullMatch ? "ready" : ""}`}>
                     <span className="coverage-pct">{rec.ingredient_coverage_percentage}%</span>
-                    <span className="coverage-sub">Pantry Match</span>
+                    <span className="coverage-sub">{isFullMatch ? "Ready to Cook" : "Pantry Match"}</span>
                   </div>
                 </div>
 
@@ -190,15 +215,25 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
                   <div
                     className={`progress-bar-fill ${isFullMatch ? "fill-complete" : ""}`}
                     style={{ width: `${rec.ingredient_coverage_percentage}%` }}
-                  ></div>
+                  />
                 </div>
 
                 <div className="rec-stats">
-                  <span>⏱️ {rec.prep_time + rec.cook_time} mins</span>
-                  <span>📊 {rec.difficulty}</span>
-                  <span>👥 {rec.servings} servings</span>
-                  <span>
-                    ✅ {rec.available_ingredients_count}/{rec.total_required_ingredients} ingredients ready
+                  <span className="meta-tag">
+                    <ClockIcon size={13} />
+                    {rec.prep_time + rec.cook_time} mins
+                  </span>
+                  <span className="meta-tag">
+                    <FilterIcon size={13} />
+                    {rec.difficulty}
+                  </span>
+                  <span className="meta-tag">
+                    <UserIcon size={13} />
+                    {rec.servings} Servings
+                  </span>
+                  <span className="meta-tag forest-tag">
+                    <CheckIcon size={13} />
+                    {rec.available_ingredients_count}/{rec.total_required_ingredients} Ready
                   </span>
                 </div>
 
@@ -208,42 +243,44 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
                   {rec.available_ingredients.length > 0 ? (
                     rec.available_ingredients.map((ing) => (
                       <span key={ing.ingredient_id} className="pill pill-available">
-                        ✓ {ing.ingredient_name}
+                        <CheckIcon size={11} /> {ing.ingredient_name}
                       </span>
                     ))
                   ) : (
-                    <span className="pill-none">None</span>
+                    <span className="pill-none">None in stock</span>
                   )}
                 </div>
 
                 {/* Missing Ingredients */}
                 {rec.missing_ingredients.length > 0 && (
                   <div className="ingredients-pill-list">
-                    <span className="pill-section-title">Missing:</span>
+                    <span className="pill-section-title missing">Missing:</span>
                     {rec.missing_ingredients.map((ing) => (
                       <span key={ing.ingredient_id} className="pill pill-missing">
-                        ✗ {ing.ingredient_name} ({ing.missing_quantity} {ing.required_unit})
+                        + {ing.ingredient_name} ({ing.missing_quantity} {ing.unit})
                       </span>
                     ))}
                   </div>
                 )}
 
+                {/* Card Action Buttons */}
                 <div className="rec-card-actions">
                   <button className="secondary-btn" onClick={() => handleOpenDetail(rec.recipe_id)}>
-                    View Instructions &amp; Breakdown
+                    View Breakdown
                   </button>
                   {rec.missing_ingredients.length > 0 ? (
                     <button
                       className="primary-btn"
                       onClick={() => handleGenerateShoppingList(rec.recipe_id)}
-                      title="Automatically calculate missing quantities and add to shopping list"
+                      title="Add missing ingredients directly to shopping list"
                     >
-                      🛒 Add Missing to Grocery List
+                      <ShoppingCartIcon size={15} />
+                      <span>Add Missing to List</span>
                     </button>
                   ) : (
-                    <button className="primary-btn complete-btn" disabled>
-                      🎉 Ready to Cook!
-                    </button>
+                    <span className="cook-now-pill">
+                      <CheckIcon size={14} /> Ready to Cook Now
+                    </span>
                   )}
                 </div>
               </div>
@@ -252,7 +289,7 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
         </div>
       )}
 
-      {/* Recipe Detail / Availability Modal */}
+      {/* Recipe Detail Modal */}
       {selectedRecipeDetail && (
         <div className="modal-backdrop" onClick={() => setSelectedRecipeDetail(null)}>
           <div className="modal-card wide-modal" onClick={(e) => e.stopPropagation()}>
@@ -260,76 +297,81 @@ export default function RecommendationsPage({ onOpenAuth, onNavigateToShopping }
               <div>
                 <h3>{selectedRecipeDetail.recipe_name}</h3>
                 <span className="modal-sub">
-                  {selectedRecipeDetail.category?.category_name} &bull; {selectedRecipeDetail.difficulty} &bull;{" "}
-                  {selectedRecipeDetail.servings} Servings
+                  Match Score: <strong>{selectedRecipeDetail.coverage_percentage}%</strong> &bull;{" "}
+                  {selectedRecipeDetail.can_cook ? "Can Cook Right Away" : "Missing Ingredients"}
                 </span>
               </div>
-              <button className="close-btn" onClick={() => setSelectedRecipeDetail(null)}>
-                ✕
+              <button
+                className="close-btn"
+                onClick={() => setSelectedRecipeDetail(null)}
+                aria-label="Close modal"
+              >
+                <CloseIcon size={20} />
               </button>
             </div>
 
             <div className="modal-body-scroll">
-              <h4>Cooking Instructions</h4>
-              <p className="instructions-text">{selectedRecipeDetail.instructions}</p>
+              <div className="detail-section-title">
+                <h4>Ingredient Breakdown</h4>
+              </div>
 
-              <h4>Detailed Ingredient Analysis</h4>
-              <table className="ingredient-table">
-                <thead>
-                  <tr>
-                    <th>Ingredient</th>
-                    <th>Required</th>
-                    <th>In Pantry</th>
-                    <th>Status</th>
-                    <th>Missing</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedRecipeDetail.detailed_ingredients?.map((item) => (
-                    <tr key={item.ingredient_id}>
-                      <td><strong>{item.ingredient_name}</strong></td>
-                      <td>{item.required_quantity} {item.required_unit}</td>
-                      <td>
-                        {item.pantry_quantity !== null
-                          ? `${item.pantry_quantity} ${item.required_unit}`
-                          : "None"}
-                      </td>
-                      <td>
-                        {item.is_available ? (
-                          <span className="badge badge-success">Available</span>
-                        ) : item.uncertain ? (
-                          <span className="badge badge-warning" title={item.reason}>
-                            Uncertain Unit
-                          </span>
-                        ) : (
-                          <span className="badge badge-danger">Insufficient</span>
-                        )}
-                      </td>
-                      <td>
-                        {item.missing_quantity > 0 ? (
-                          <span className="text-danger">
-                            {item.missing_quantity} {item.required_unit}
-                          </span>
-                        ) : (
-                          "✓ 0"
-                        )}
-                      </td>
+              <div className="availability-table-wrap">
+                <table className="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Ingredient</th>
+                      <th>Required</th>
+                      <th>In Pantry</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {selectedRecipeDetail.ingredients?.map((i) => (
+                      <tr key={i.ingredient_id}>
+                        <td className="font-medium">{i.ingredient_name}</td>
+                        <td>
+                          {i.required_quantity} {i.unit}
+                        </td>
+                        <td>
+                          {i.pantry_quantity} {i.unit}
+                        </td>
+                        <td>
+                          {i.has_enough ? (
+                            <span className="badge-pill in-stock">
+                              <CheckIcon size={11} /> In Stock
+                            </span>
+                          ) : (
+                            <span className="badge-pill missing-badge">
+                              Missing {i.missing_quantity} {i.unit}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="modal-footer">
               <button
-                className="primary-btn"
-                onClick={() => {
-                  handleGenerateShoppingList(selectedRecipeDetail.recipe_id);
-                  setSelectedRecipeDetail(null);
-                }}
+                className="secondary-btn"
+                onClick={() => setSelectedRecipeDetail(null)}
               >
-                🛒 Add Missing Ingredients to Shopping List
+                Close
               </button>
+              {!selectedRecipeDetail.can_cook && (
+                <button
+                  className="primary-btn"
+                  onClick={() => {
+                    handleGenerateShoppingList(selectedRecipeDetail.recipe_id);
+                    setSelectedRecipeDetail(null);
+                  }}
+                >
+                  <ShoppingCartIcon size={15} />
+                  <span>Add Missing to Shopping List</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { recipeAPI, favoriteAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import {
+  RecipesIcon,
+  SearchIcon,
+  HeartIcon,
+  ClockIcon,
+  FilterIcon,
+  UserIcon,
+  CloseIcon,
+  ChefHatIcon,
+} from "../components/Icons";
 
 export default function RecipesPage({ onOpenAuth, initialSelectedRecipe = null }) {
   const { user } = useAuth();
@@ -18,18 +28,6 @@ export default function RecipesPage({ onOpenAuth, initialSelectedRecipe = null }
 
   // Modals
   const [selectedRecipe, setSelectedRecipe] = useState(initialSelectedRecipe);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
-  // New Recipe Form
-  const [recipeName, setRecipeName] = useState("");
-  const [description, setDescription] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [prepTime, setPrepTime] = useState(15);
-  const [cookTime, setCookTime] = useState(20);
-  const [difficulty, setDifficulty] = useState("EASY");
-  const [servings, setServings] = useState(2);
-  const [createError, setCreateError] = useState("");
 
   const loadRecipes = async () => {
     setLoading(true);
@@ -103,20 +101,24 @@ export default function RecipesPage({ onOpenAuth, initialSelectedRecipe = null }
     <div className="recipes-page">
       <div className="page-header">
         <div>
-          <h2>🍳 Explore Recipes</h2>
+          <div className="header-badge">Catalog</div>
+          <h2>Recipe Directory</h2>
           <p className="subtitle">Discover chef-crafted meals, quick dinners, and community favorites.</p>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
       <div className="recipes-search-bar">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="🔍 Search recipes by name (e.g. Pasta, Curry, Pancakes)..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="search-input-wrap">
+          <SearchIcon size={18} className="search-icon-inside" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search recipes by name, keywords, or cuisine..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
         <div className="filters-row">
           <select
@@ -160,10 +162,12 @@ export default function RecipesPage({ onOpenAuth, initialSelectedRecipe = null }
 
       {/* Recipe Cards Grid */}
       {loading ? (
-        <div className="loading-state">Loading delicious recipes...</div>
+        <div className="loading-state">Loading recipe collection...</div>
       ) : recipes.length === 0 ? (
         <div className="empty-state">
-          <p>No recipes found matching your search and filter criteria.</p>
+          <RecipesIcon size={40} className="empty-state-icon" />
+          <h3>No matching recipes found</h3>
+          <p>Try adjusting your search terms or clearing category filters.</p>
         </div>
       ) : (
         <div className="recipes-grid">
@@ -172,47 +176,62 @@ export default function RecipesPage({ onOpenAuth, initialSelectedRecipe = null }
             return (
               <div key={r.recipe_id} className="recipe-card">
                 <div className="recipe-card-header">
-                  <div>
+                  <div className="recipe-title-block">
                     <span className="category-pill">{r.category?.category_name}</span>
-                    <h3>{r.recipe_name}</h3>
+                    <h3 className="recipe-title">{r.recipe_name}</h3>
                   </div>
                   <button
                     className={`favorite-btn ${isFav ? "active" : ""}`}
                     onClick={() => handleToggleFavorite(r.recipe_id)}
-                    title={isFav ? "Remove favorite" : "Save to favorites"}
+                    title={isFav ? "Remove from favorites" : "Save to favorites"}
+                    aria-label="Toggle favorite"
                   >
-                    {isFav ? "❤️" : "🤍"}
+                    <HeartIcon
+                      size={20}
+                      color={isFav ? "#e11d48" : "#94a3b8"}
+                      className={isFav ? "filled-heart" : ""}
+                    />
                   </button>
                 </div>
 
                 <p className="recipe-desc">{r.description || "No description provided."}</p>
 
                 <div className="recipe-meta-tags">
-                  <span>⏱️ {r.prep_time + r.cook_time} mins</span>
-                  <span>📊 {r.difficulty}</span>
-                  <span>👥 {r.servings} Servings</span>
+                  <span className="meta-tag">
+                    <ClockIcon size={14} />
+                    {r.prep_time + r.cook_time} mins
+                  </span>
+                  <span className="meta-tag">
+                    <FilterIcon size={14} />
+                    {r.difficulty}
+                  </span>
+                  <span className="meta-tag">
+                    <UserIcon size={14} />
+                    {r.servings} Servings
+                  </span>
                 </div>
 
                 {r.dietary_tags?.length > 0 && (
                   <div className="dietary-tags-list">
                     {r.dietary_tags.map((t) => (
                       <span key={t.tag_id} className="dietary-tag">
-                        🌱 {t.tag_name}
+                        {t.tag_name}
                       </span>
                     ))}
                   </div>
                 )}
 
                 <div className="ingredients-preview">
-                  <strong>Key Ingredients:</strong>
-                  <p>
-                    {r.ingredients?.map((i) => i.ingredient_name).join(", ") || "Ingredients on detail"}
+                  <span className="preview-label">Ingredients:</span>
+                  <p className="preview-text">
+                    {r.ingredients?.map((i) => i.ingredient_name).join(", ") || "Detailed in instructions"}
                   </p>
                 </div>
 
                 <div className="recipe-card-footer">
-                  <span className="source-pill">
-                    {r.source_type === "PREDEFINED" ? "🌟 Chef Curated" : "👤 Community"}
+                  <span className={`source-pill ${r.source_type === "PREDEFINED" ? "curated" : "community"}`}>
+                    <ChefHatIcon size={13} />
+                    {r.source_type === "PREDEFINED" ? "Chef Curated" : "Community"}
                   </span>
                   <button className="primary-btn" onClick={() => handleOpenRecipe(r.recipe_id)}>
                     View Recipe
@@ -236,25 +255,34 @@ export default function RecipesPage({ onOpenAuth, initialSelectedRecipe = null }
                   {selectedRecipe.servings} Servings
                 </span>
               </div>
-              <button className="close-btn" onClick={() => setSelectedRecipe(null)}>
-                ✕
+              <button className="close-btn" onClick={() => setSelectedRecipe(null)} aria-label="Close modal">
+                <CloseIcon size={20} />
               </button>
             </div>
 
             <div className="modal-body-scroll">
               <p className="detail-desc">{selectedRecipe.description}</p>
 
-              <h4>Ingredients ({selectedRecipe.ingredients?.length})</h4>
+              <div className="detail-section-title">
+                <h4>Required Ingredients</h4>
+                <span className="badge-counter">{selectedRecipe.ingredients?.length || 0}</span>
+              </div>
               <ul className="recipe-ingredients-checklist">
                 {selectedRecipe.ingredients?.map((i) => (
-                  <li key={i.ingredient_id}>
-                    <strong>{i.ingredient_name}:</strong> {i.quantity} {i.unit}{" "}
-                    {i.notes && <span className="ing-note">({i.notes})</span>}
+                  <li key={i.ingredient_id} className="checklist-item">
+                    <div className="item-bullet" />
+                    <span className="item-name">{i.ingredient_name}</span>
+                    <span className="item-qty">
+                      {i.quantity} {i.unit}
+                    </span>
+                    {i.notes && <span className="item-note">({i.notes})</span>}
                   </li>
                 ))}
               </ul>
 
-              <h4>Cooking Instructions</h4>
+              <div className="detail-section-title mt-4">
+                <h4>Cooking Instructions</h4>
+              </div>
               <div className="instructions-container">
                 <p>{selectedRecipe.instructions}</p>
               </div>
@@ -265,7 +293,14 @@ export default function RecipesPage({ onOpenAuth, initialSelectedRecipe = null }
                 className={`secondary-btn ${favoriteIds.has(selectedRecipe.recipe_id) ? "favorited" : ""}`}
                 onClick={() => handleToggleFavorite(selectedRecipe.recipe_id)}
               >
-                {favoriteIds.has(selectedRecipe.recipe_id) ? "❤️ In Favorites" : "🤍 Add to Favorites"}
+                <HeartIcon
+                  size={16}
+                  color={favoriteIds.has(selectedRecipe.recipe_id) ? "#e11d48" : "currentColor"}
+                  className={favoriteIds.has(selectedRecipe.recipe_id) ? "filled-heart" : ""}
+                />
+                <span>
+                  {favoriteIds.has(selectedRecipe.recipe_id) ? "Favorited" : "Add to Favorites"}
+                </span>
               </button>
             </div>
           </div>

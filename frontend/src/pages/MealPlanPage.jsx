@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { mealPlanAPI, recipeAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import {
+  CalendarIcon,
+  PlusIcon,
+  TrashIcon,
+  CheckIcon,
+  ClockIcon,
+  UserIcon,
+  CloseIcon,
+  RecipesIcon,
+} from "../components/Icons";
 
 export default function MealPlanPage({ onOpenAuth }) {
   const { user } = useAuth();
@@ -61,7 +71,7 @@ export default function MealPlanPage({ onOpenAuth }) {
   useEffect(() => {
     loadPlans();
     if (user) {
-      recipeAPI.getAll({ limit: 50 }).then((r) => {
+      recipeAPI.getAll({ limit: 100 }).then((r) => {
         setAllRecipes(r.data?.data?.recipes || []);
       });
     }
@@ -69,6 +79,7 @@ export default function MealPlanPage({ onOpenAuth }) {
 
   const handleCreatePlan = async (e) => {
     e.preventDefault();
+    if (!planName || !startDate || !endDate) return;
     try {
       const res = await mealPlanAPI.create({
         plan_name: planName,
@@ -136,7 +147,10 @@ export default function MealPlanPage({ onOpenAuth }) {
   if (!user) {
     return (
       <div className="auth-prompt-card">
-        <h2>📅 Meal Planning</h2>
+        <div className="auth-prompt-icon-wrap">
+          <CalendarIcon size={36} />
+        </div>
+        <h2>Meal Planning</h2>
         <p>Sign in to plan your weekly meals, organize your schedule, and cook stress-free!</p>
         <button className="primary-btn" onClick={onOpenAuth}>
           Sign In
@@ -149,11 +163,13 @@ export default function MealPlanPage({ onOpenAuth }) {
     <div className="mealplan-page">
       <div className="page-header">
         <div>
-          <h2>📅 Meal Planning</h2>
-          <p className="subtitle">Schedule healthy, homemade meals across your week.</p>
+          <div className="header-badge">Schedule</div>
+          <h2>Meal Planning</h2>
+          <p className="subtitle">Schedule healthy, homemade meals across your week to streamline prep and shopping.</p>
         </div>
         <button className="primary-btn" onClick={() => setShowNewPlanModal(true)}>
-          + New Meal Plan
+          <PlusIcon size={16} />
+          <span>New Meal Plan</span>
         </button>
       </div>
 
@@ -169,8 +185,8 @@ export default function MealPlanPage({ onOpenAuth }) {
             }}
           >
             <span className="tab-title">{p.plan_name}</span>
-            <span className="tab-count">
-              {p.start_date.split("T")[0]} &rarr; {p.end_date.split("T")[0]} ({p.total_meals} meals)
+            <span className="tab-count-badge">
+              {p.total_meals} meals
             </span>
           </button>
         ))}
@@ -180,19 +196,21 @@ export default function MealPlanPage({ onOpenAuth }) {
         <div className="loading-state">Loading your meal plans...</div>
       ) : !activePlan ? (
         <div className="empty-state">
-          <p>No meal plans found.</p>
-          <button className="primary-btn" onClick={() => setShowNewPlanModal(true)}>
-            Create a weekly meal plan
+          <CalendarIcon size={40} className="empty-state-icon" />
+          <h3>No meal plans created yet</h3>
+          <p>Create a weekly meal plan to organize your breakfast, lunch, and dinner routine.</p>
+          <button className="primary-btn mt-3" onClick={() => setShowNewPlanModal(true)}>
+            Create First Meal Plan
           </button>
         </div>
       ) : (
         <div className="active-plan-card">
           <div className="plan-header-row">
             <div>
-              <h3>{activePlan.plan_name}</h3>
+              <h3 className="active-plan-name">{activePlan.plan_name}</h3>
               <span className="plan-date-range">
-                🗓️ {activePlan.start_date.split("T")[0]} to {activePlan.end_date.split("T")[0]} &bull;{" "}
-                {activePlan.total_meals} scheduled meals
+                <ClockIcon size={13} /> {activePlan.start_date.split("T")[0]} to {activePlan.end_date.split("T")[0]} &bull;{" "}
+                {activePlan.total_meals} scheduled meal(s)
               </span>
             </div>
             <div className="card-header-btns">
@@ -203,19 +221,21 @@ export default function MealPlanPage({ onOpenAuth }) {
                   setShowAddMealModal(true);
                 }}
               >
-                + Schedule Meal
+                <PlusIcon size={14} />
+                <span>Schedule Meal</span>
               </button>
               <button className="danger-btn" onClick={handleDeletePlan}>
-                Delete Plan
+                <TrashIcon size={14} />
+                <span>Delete Plan</span>
               </button>
             </div>
           </div>
 
           {activePlan.items?.length === 0 ? (
-            <div className="empty-state">
+            <div className="empty-state inner">
               <p>No meals scheduled in this plan yet.</p>
               <button
-                className="secondary-btn"
+                className="secondary-btn mt-2"
                 onClick={() => {
                   setPlannedDate(activePlan.start_date.split("T")[0]);
                   setShowAddMealModal(true);
@@ -229,26 +249,39 @@ export default function MealPlanPage({ onOpenAuth }) {
               {activePlan.items?.map((item) => (
                 <div key={item.meal_item_id} className={`planned-meal-card ${item.status.toLowerCase()}`}>
                   <div className="meal-card-top">
-                    <span className="meal-type-badge">{item.meal_type}</span>
-                    <span className="meal-date">{item.planned_date.split("T")[0]}</span>
+                    <span className="meal-type-pill">{item.meal_type}</span>
+                    <span className="meal-date-tag">
+                      <ClockIcon size={12} /> {item.planned_date.split("T")[0]}
+                    </span>
                   </div>
 
-                  <h4>{item.recipe_name}</h4>
-                  <p className="meal-servings">👥 {item.planned_servings} servings</p>
+                  <h4 className="meal-recipe-title">{item.recipe_name}</h4>
+                  <div className="meal-servings">
+                    <UserIcon size={13} />
+                    <span>{item.planned_servings} planned servings</span>
+                  </div>
 
                   <div className="meal-card-bottom">
                     <button
                       className={`status-toggle-btn ${item.status === "COOKED" ? "is-cooked" : ""}`}
                       onClick={() => handleToggleMealStatus(item.meal_item_id, item.status)}
                     >
-                      {item.status === "COOKED" ? "✅ Cooked" : "⏳ Planned"}
+                      {item.status === "COOKED" ? (
+                        <>
+                          <CheckIcon size={13} /> Cooked
+                        </>
+                      ) : (
+                        <>
+                          <ClockIcon size={13} /> Planned
+                        </>
+                      )}
                     </button>
                     <button
-                      className="delete-icon-btn"
+                      className="action-icon-btn danger"
                       onClick={() => handleDeleteMealItem(item.meal_item_id)}
-                      title="Remove meal"
+                      title="Remove meal from schedule"
                     >
-                      ✕
+                      <TrashIcon size={14} />
                     </button>
                   </div>
                 </div>
@@ -258,14 +291,14 @@ export default function MealPlanPage({ onOpenAuth }) {
         </div>
       )}
 
-      {/* New Meal Plan Modal */}
+      {/* New Plan Modal */}
       {showNewPlanModal && (
         <div className="modal-backdrop" onClick={() => setShowNewPlanModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Create New Meal Plan</h3>
-              <button className="close-btn" onClick={() => setShowNewPlanModal(false)}>
-                ✕
+              <button className="close-btn" onClick={() => setShowNewPlanModal(false)} aria-label="Close modal">
+                <CloseIcon size={20} />
               </button>
             </div>
             <form onSubmit={handleCreatePlan} className="modal-form">
@@ -274,36 +307,44 @@ export default function MealPlanPage({ onOpenAuth }) {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Next Week's Family Meals"
+                  placeholder="e.g. Healthy Week, Low Carb Prep"
                   value={planName}
                   onChange={(e) => setPlanName(e.target.value)}
+                  className="text-input"
                 />
               </div>
 
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>Start Date</label>
                   <input
                     type="date"
                     required
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
+                    className="text-input"
                   />
                 </div>
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>End Date</label>
                   <input
                     type="date"
                     required
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
+                    className="text-input"
                   />
                 </div>
               </div>
 
-              <button type="submit" className="submit-btn">
-                Create Plan
-              </button>
+              <div className="modal-footer-actions">
+                <button type="button" className="secondary-btn" onClick={() => setShowNewPlanModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  Create Plan
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -315,8 +356,8 @@ export default function MealPlanPage({ onOpenAuth }) {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Schedule a Meal</h3>
-              <button className="close-btn" onClick={() => setShowAddMealModal(false)}>
-                ✕
+              <button className="close-btn" onClick={() => setShowAddMealModal(false)} aria-label="Close modal">
+                <CloseIcon size={20} />
               </button>
             </div>
 
@@ -325,32 +366,40 @@ export default function MealPlanPage({ onOpenAuth }) {
             <form onSubmit={handleAddMeal} className="modal-form">
               <div className="form-group">
                 <label>Select Recipe</label>
-                <select required value={recipeId} onChange={(e) => setRecipeId(e.target.value)}>
-                  <option value="">-- Choose Recipe --</option>
+                <select
+                  required
+                  value={recipeId}
+                  onChange={(e) => setRecipeId(e.target.value)}
+                  className="select-input"
+                >
+                  <option value="">-- Choose a Recipe --</option>
                   {allRecipes.map((r) => (
                     <option key={r.recipe_id} value={r.recipe_id}>
-                      {r.recipe_name} ({r.difficulty})
+                      {r.recipe_name} ({r.category?.category_name})
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>Planned Date</label>
                   <input
                     type="date"
                     required
-                    min={activePlan?.start_date.split("T")[0]}
-                    max={activePlan?.end_date.split("T")[0]}
                     value={plannedDate}
                     onChange={(e) => setPlannedDate(e.target.value)}
+                    className="text-input"
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>Meal Type</label>
-                  <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
+                  <select
+                    value={mealType}
+                    onChange={(e) => setMealType(e.target.value)}
+                    className="select-input"
+                  >
                     <option value="BREAKFAST">Breakfast</option>
                     <option value="LUNCH">Lunch</option>
                     <option value="DINNER">Dinner</option>
@@ -360,19 +409,25 @@ export default function MealPlanPage({ onOpenAuth }) {
               </div>
 
               <div className="form-group">
-                <label>Servings</label>
+                <label>Planned Servings</label>
                 <input
                   type="number"
                   min="1"
                   required
                   value={plannedServings}
                   onChange={(e) => setPlannedServings(e.target.value)}
+                  className="text-input"
                 />
               </div>
 
-              <button type="submit" className="submit-btn">
-                Add to Schedule
-              </button>
+              <div className="modal-footer-actions">
+                <button type="button" className="secondary-btn" onClick={() => setShowAddMealModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  Schedule Meal
+                </button>
+              </div>
             </form>
           </div>
         </div>

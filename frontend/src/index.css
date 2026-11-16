@@ -1,111 +1,110 @@
+/* ─── Global Design Tokens & Base CSS ────────────────────────────────────────── */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Color Palette - Forest & Sage SaaS Theme */
+  --color-primary: #1e3d2f;        /* Deep Forest Green */
+  --color-primary-hover: #162f24;  /* Darker Forest Green */
+  --color-primary-light: #285441;  /* Rich Forest */
+  
+  --color-secondary: #4a7c59;      /* Forest Sage */
+  --color-secondary-soft: #eaf2ed; /* Soft Sage Background */
+  --color-secondary-border: #cfe0d4;
+  
+  --color-accent-amber: #d97706;   /* Subtle Warm Amber */
+  --color-accent-amber-soft: #fef3c7;
+  --color-accent-red: #dc2626;     /* Crimson */
+  --color-accent-red-soft: #fee2e2;
+  --color-accent-emerald: #059669; /* Fresh Emerald */
+  --color-accent-emerald-soft: #d1fae5;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Surfaces & Backgrounds */
+  --bg-app: #f4f7f5;               /* Warm Off-White Canvas */
+  --bg-sidebar: #172a22;           /* Deep Executive Forest Sidebar */
+  --bg-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --bg-sidebar-active: #234637;    /* Active Sidebar Item Fill */
+  --bg-card: #ffffff;              /* Pure White Cards */
+  --bg-card-subtle: #f9fbf9;       /* Subtle Card Tint */
+  --bg-input: #ffffff;
+  --bg-modal-backdrop: rgba(14, 28, 21, 0.65);
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Typography Colors */
+  --text-main: #17241d;            /* Dark Charcoal Main Text */
+  --text-muted: #586960;           /* Soft Gray-Green Muted */
+  --text-light: #87998f;           /* Dimmed Meta Text */
+  --text-sidebar: #c5d8cd;         /* Light Sage Sidebar Text */
+  --text-sidebar-active: #ffffff;  /* High Contrast White */
+  --text-sidebar-dim: #7f978a;     /* Section Label Dimmed */
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* Borders & Dividers */
+  --border-light: #e3ede6;
+  --border-card: #e1ebe4;
+  --border-input: #cfded4;
+  --border-input-focus: #1e3d2f;
+  --border-sidebar: rgba(255, 255, 255, 0.08);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(20, 45, 33, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(20, 45, 33, 0.06), 0 2px 4px -1px rgba(20, 45, 33, 0.03);
+  --shadow-lg: 0 12px 24px -4px rgba(20, 45, 33, 0.08), 0 4px 8px -2px rgba(20, 45, 33, 0.04);
+  --shadow-modal: 0 24px 48px -12px rgba(10, 25, 18, 0.25);
+
+  /* Dimensions */
+  --sidebar-width: 260px;
+  --header-height-mobile: 60px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
+html, body {
   margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-family);
   font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  text-align: left !important;
+  border: none !important;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }

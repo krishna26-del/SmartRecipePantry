@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { shoppingListAPI, recipeAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import {
+  ShoppingCartIcon,
+  PlusIcon,
+  SparklesIcon,
+  TrashIcon,
+  CheckIcon,
+  CloseIcon,
+  RecipesIcon,
+} from "../components/Icons";
 
 export default function ShoppingListPage({ onOpenAuth }) {
   const { user } = useAuth();
@@ -152,7 +161,10 @@ export default function ShoppingListPage({ onOpenAuth }) {
   if (!user) {
     return (
       <div className="auth-prompt-card">
-        <h2>🛒 Shopping Lists</h2>
+        <div className="auth-prompt-icon-wrap">
+          <ShoppingCartIcon size={36} />
+        </div>
+        <h2>Shopping Lists</h2>
         <p>Sign in to organize your grocery shopping and automatically calculate missing items for recipes!</p>
         <button className="primary-btn" onClick={onOpenAuth}>
           Sign In for Shopping Lists
@@ -165,15 +177,22 @@ export default function ShoppingListPage({ onOpenAuth }) {
     <div className="shopping-page">
       <div className="page-header">
         <div>
-          <h2>🛒 Shopping Lists</h2>
+          <div className="header-badge">Grocery Management</div>
+          <h2>Shopping Lists</h2>
           <p className="subtitle">Manage items to buy, check off purchases, or auto-generate from recipes.</p>
         </div>
-        <div className="header-actions">
-          <button className="secondary-btn" onClick={() => setShowGenModal(true)} disabled={!activeListId}>
-            ✨ Add From Recipe
+        <div className="page-header-actions">
+          <button
+            className="secondary-btn"
+            onClick={() => setShowGenModal(true)}
+            disabled={!activeListId}
+          >
+            <SparklesIcon size={16} />
+            <span>Add From Recipe</span>
           </button>
           <button className="primary-btn" onClick={() => setShowNewListModal(true)}>
-            + New List
+            <PlusIcon size={16} />
+            <span>New List</span>
           </button>
         </div>
       </div>
@@ -187,7 +206,7 @@ export default function ShoppingListPage({ onOpenAuth }) {
             onClick={() => handleSelectTab(l.list_id)}
           >
             <span className="tab-title">{l.list_name}</span>
-            <span className="tab-count">
+            <span className="tab-count-badge">
               {l.purchased_items}/{l.total_items}
             </span>
           </button>
@@ -198,34 +217,38 @@ export default function ShoppingListPage({ onOpenAuth }) {
         <div className="loading-state">Loading shopping lists...</div>
       ) : !activeList ? (
         <div className="empty-state">
-          <p>You have no shopping lists yet.</p>
-          <button className="primary-btn" onClick={() => setShowNewListModal(true)}>
-            Create your first list
+          <ShoppingCartIcon size={40} className="empty-state-icon" />
+          <h3>No shopping lists yet</h3>
+          <p>Create a grocery list to keep your shopping organized and stress-free.</p>
+          <button className="primary-btn mt-3" onClick={() => setShowNewListModal(true)}>
+            Create First List
           </button>
         </div>
       ) : (
         <div className="active-list-card">
           <div className="list-card-header">
             <div>
-              <h3>{activeList.list_name}</h3>
+              <h3 className="active-list-name">{activeList.list_name}</h3>
               <span className="list-sub">
-                {activeList.purchased_items} of {activeList.total_items} items purchased
+                {activeList.purchased_items} of {activeList.total_items} items marked as purchased
               </span>
             </div>
             <div className="card-header-btns">
               <button className="secondary-btn" onClick={() => setShowAddItemModal(true)}>
-                + Add Item
+                <PlusIcon size={14} />
+                <span>Add Item</span>
               </button>
               <button className="danger-btn" onClick={handleDeleteList}>
-                Delete List
+                <TrashIcon size={14} />
+                <span>Delete List</span>
               </button>
             </div>
           </div>
 
           {activeList.items?.length === 0 ? (
-            <div className="empty-state">
+            <div className="empty-state inner">
               <p>This list is currently empty.</p>
-              <button className="secondary-btn" onClick={() => setShowAddItemModal(true)}>
+              <button className="secondary-btn mt-2" onClick={() => setShowAddItemModal(true)}>
                 Add an ingredient manually
               </button>
             </div>
@@ -242,7 +265,7 @@ export default function ShoppingListPage({ onOpenAuth }) {
                       checked={item.is_purchased}
                       onChange={() => handleTogglePurchased(item.list_item_id, item.is_purchased)}
                     />
-                    <span className="checkmark"></span>
+                    <span className="checkmark" />
                     <span className="item-name">{item.ingredient_name}</span>
                   </label>
 
@@ -251,14 +274,16 @@ export default function ShoppingListPage({ onOpenAuth }) {
                       {item.quantity} {item.unit}
                     </span>
                     {item.added_from_recipe_name && (
-                      <span className="source-tag">From: {item.added_from_recipe_name}</span>
+                      <span className="source-tag">
+                        <RecipesIcon size={12} /> {item.added_from_recipe_name}
+                      </span>
                     )}
                     <button
-                      className="delete-icon-btn"
+                      className="action-icon-btn danger"
                       onClick={() => handleDeleteItem(item.list_item_id)}
                       title="Remove from list"
                     >
-                      ✕
+                      <TrashIcon size={14} />
                     </button>
                   </div>
                 </div>
@@ -274,8 +299,8 @@ export default function ShoppingListPage({ onOpenAuth }) {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Create Shopping List</h3>
-              <button className="close-btn" onClick={() => setShowNewListModal(false)}>
-                ✕
+              <button className="close-btn" onClick={() => setShowNewListModal(false)} aria-label="Close modal">
+                <CloseIcon size={20} />
               </button>
             </div>
             <form onSubmit={handleCreateList} className="modal-form">
@@ -284,14 +309,20 @@ export default function ShoppingListPage({ onOpenAuth }) {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Weekend Barbecue, Weekly Groceries"
+                  placeholder="e.g. Weekly Groceries, Weekend Cookout"
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
+                  className="text-input"
                 />
               </div>
-              <button type="submit" className="submit-btn">
-                Create List
-              </button>
+              <div className="modal-footer-actions">
+                <button type="button" className="secondary-btn" onClick={() => setShowNewListModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  Create List
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -303,8 +334,8 @@ export default function ShoppingListPage({ onOpenAuth }) {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Add Item to List</h3>
-              <button className="close-btn" onClick={() => setShowAddItemModal(false)}>
-                ✕
+              <button className="close-btn" onClick={() => setShowAddItemModal(false)} aria-label="Close modal">
+                <CloseIcon size={20} />
               </button>
             </div>
             <form onSubmit={handleAddItem} className="modal-form">
@@ -318,6 +349,7 @@ export default function ShoppingListPage({ onOpenAuth }) {
                     const selected = ingredients.find((i) => i.ingredient_id === Number(e.target.value));
                     if (selected) setUnit(selected.default_unit || "g");
                   }}
+                  className="select-input"
                 >
                   <option value="">-- Choose Ingredient --</option>
                   {ingredients.map((ing) => (
@@ -329,7 +361,7 @@ export default function ShoppingListPage({ onOpenAuth }) {
               </div>
 
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>Quantity</label>
                   <input
                     type="number"
@@ -338,22 +370,29 @@ export default function ShoppingListPage({ onOpenAuth }) {
                     required
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
+                    className="text-input"
                   />
                 </div>
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>Unit</label>
                   <input
                     type="text"
                     required
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
+                    className="text-input"
                   />
                 </div>
               </div>
 
-              <button type="submit" className="submit-btn">
-                Add to List
-              </button>
+              <div className="modal-footer-actions">
+                <button type="button" className="secondary-btn" onClick={() => setShowAddItemModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  Add Item
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -364,14 +403,14 @@ export default function ShoppingListPage({ onOpenAuth }) {
         <div className="modal-backdrop" onClick={() => setShowGenModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Add Missing Ingredients from Recipe</h3>
-              <button className="close-btn" onClick={() => setShowGenModal(false)}>
-                ✕
+              <h3>Auto-Generate From Recipe</h3>
+              <button className="close-btn" onClick={() => setShowGenModal(false)} aria-label="Close modal">
+                <CloseIcon size={20} />
               </button>
             </div>
             <form onSubmit={handleGenerateFromRecipe} className="modal-form">
-              <p className="modal-info">
-                We'll compare this recipe's ingredients with your current pantry inventory and automatically add only what you lack.
+              <p className="hint-text mb-3">
+                Select a recipe to calculate missing ingredients against your current pantry stock and automatically append them.
               </p>
               <div className="form-group">
                 <label>Select Recipe</label>
@@ -379,18 +418,24 @@ export default function ShoppingListPage({ onOpenAuth }) {
                   required
                   value={selectedRecipeId}
                   onChange={(e) => setSelectedRecipeId(e.target.value)}
+                  className="select-input"
                 >
-                  <option value="">-- Choose Recipe --</option>
+                  <option value="">-- Choose a Recipe --</option>
                   {allRecipes.map((r) => (
                     <option key={r.recipe_id} value={r.recipe_id}>
-                      {r.recipe_name} ({r.category?.category_name || "General"})
+                      {r.recipe_name} ({r.category?.category_name})
                     </option>
                   ))}
                 </select>
               </div>
-              <button type="submit" className="submit-btn">
-                Calculate &amp; Add Missing Items
-              </button>
+              <div className="modal-footer-actions">
+                <button type="button" className="secondary-btn" onClick={() => setShowGenModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  Generate Missing Items
+                </button>
+              </div>
             </form>
           </div>
         </div>

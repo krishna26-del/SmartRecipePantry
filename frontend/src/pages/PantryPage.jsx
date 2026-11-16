@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { pantryAPI, recipeAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import {
+  PantryIcon,
+  PlusIcon,
+  TrashIcon,
+  CloseIcon,
+  AlertCircleIcon,
+  CheckIcon,
+} from "../components/Icons";
 
 export default function PantryPage({ onOpenAuth }) {
   const { user } = useAuth();
@@ -87,8 +95,11 @@ export default function PantryPage({ onOpenAuth }) {
   if (!user) {
     return (
       <div className="auth-prompt-card">
-        <h2>🥫 Pantry Management</h2>
-        <p>Sign in to manage your pantry ingredients, track shelf-life, and get smart recipe matches!</p>
+        <div className="auth-prompt-icon-wrap">
+          <PantryIcon size={36} />
+        </div>
+        <h2>Pantry Management</h2>
+        <p>Sign in to manage your kitchen stock, track shelf-life, and get instant recipe recommendations!</p>
         <button className="primary-btn" onClick={onOpenAuth}>
           Sign In to View Pantry
         </button>
@@ -106,11 +117,13 @@ export default function PantryPage({ onOpenAuth }) {
     <div className="pantry-page">
       <div className="page-header">
         <div>
-          <h2>🥫 My Pantry Inventory</h2>
-          <p className="subtitle">Track ingredients, expiration dates, and pantry stock in real-time.</p>
+          <div className="header-badge">Inventory</div>
+          <h2>Pantry Management</h2>
+          <p className="subtitle">Real-time tracking of ingredients, stock levels, and shelf-life alerts.</p>
         </div>
         <button className="primary-btn" onClick={() => setShowAddModal(true)}>
-          + Add Ingredient
+          <PlusIcon size={16} />
+          <span>Add Ingredient</span>
         </button>
       </div>
 
@@ -119,18 +132,18 @@ export default function PantryPage({ onOpenAuth }) {
         <div className="summary-cards-grid">
           <div className="summary-card">
             <span className="card-num">{summary.total_items}</span>
-            <span className="card-label">Total Items</span>
+            <span className="card-label">Total Tracked Items</span>
           </div>
           <div className="summary-card active">
-            <span className="card-num">{summary.active_items}</span>
-            <span className="card-label">Active & Fresh</span>
+            <span className="card-num text-forest">{summary.active_items}</span>
+            <span className="card-label">Fresh & In-Date</span>
           </div>
           <div className="summary-card warning">
-            <span className="card-num">{summary.expiring_soon_items}</span>
-            <span className="card-label">Expiring Soon (&le; 7 days)</span>
+            <span className="card-num text-amber">{summary.expiring_soon_items}</span>
+            <span className="card-label">Expiring (&le; 7 days)</span>
           </div>
           <div className="summary-card danger">
-            <span className="card-num">{summary.expired_items}</span>
+            <span className="card-num text-crimson">{summary.expired_items}</span>
             <span className="card-label">Expired</span>
           </div>
         </div>
@@ -160,12 +173,14 @@ export default function PantryPage({ onOpenAuth }) {
 
       {/* Pantry List Table / Cards */}
       {loading ? (
-        <div className="loading-state">Loading your pantry...</div>
+        <div className="loading-state">Loading your pantry inventory...</div>
       ) : filteredPantry.length === 0 ? (
         <div className="empty-state">
-          <p>No pantry items found under this filter.</p>
-          <button className="primary-btn" onClick={() => setShowAddModal(true)}>
-            Add an item now
+          <PantryIcon size={40} className="empty-state-icon" />
+          <h3>No pantry items in this view</h3>
+          <p>Add ingredients to keep track of your kitchen stock and unlock smart recommendations.</p>
+          <button className="primary-btn mt-3" onClick={() => setShowAddModal(true)}>
+            Add First Ingredient
           </button>
         </div>
       ) : (
@@ -173,30 +188,44 @@ export default function PantryPage({ onOpenAuth }) {
           {filteredPantry.map((item) => (
             <div key={item.pantry_item_id} className={`pantry-card status-${item.status.toLowerCase()}`}>
               <div className="pantry-card-top">
-                <h4>{item.ingredient_name}</h4>
-                <span className={`badge badge-${item.status.toLowerCase()}`}>
-                  {item.status === "EXPIRING_SOON"
-                    ? "⚠️ Expiring Soon"
-                    : item.status === "EXPIRED"
-                    ? "⛔ Expired"
-                    : "Fresh"}
+                <div className="pantry-item-info">
+                  <h4 className="pantry-item-title">{item.ingredient_name}</h4>
+                  <span className="pantry-unit-hint">Unit: {item.unit}</span>
+                </div>
+                <span className={`badge-pill ${item.status.toLowerCase()}`}>
+                  {item.status === "EXPIRING_SOON" ? (
+                    <>
+                      <AlertCircleIcon size={12} /> Expiring Soon
+                    </>
+                  ) : item.status === "EXPIRED" ? (
+                    <>
+                      <AlertCircleIcon size={12} /> Expired
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon size={12} /> Fresh
+                    </>
+                  )}
                 </span>
               </div>
 
-              <div className="pantry-card-qty">
-                <span className="qty-number">
-                  {item.quantity} {item.unit}
-                </span>
-                <div className="qty-buttons">
+              <div className="pantry-card-qty-row">
+                <div className="qty-display">
+                  <span className="qty-number">{item.quantity}</span>
+                  <span className="qty-unit">{item.unit}</span>
+                </div>
+                <div className="qty-stepper">
                   <button
-                    className="qty-btn"
+                    className="stepper-btn"
                     onClick={() => handleQuickQuantityUpdate(item.pantry_item_id, item.quantity, -10)}
+                    title="Decrease quantity"
                   >
-                    -
+                    &minus;
                   </button>
                   <button
-                    className="qty-btn"
+                    className="stepper-btn"
                     onClick={() => handleQuickQuantityUpdate(item.pantry_item_id, item.quantity, 10)}
+                    title="Increase quantity"
                   >
                     +
                   </button>
@@ -204,15 +233,15 @@ export default function PantryPage({ onOpenAuth }) {
               </div>
 
               <div className="pantry-card-footer">
-                <span className="expiry-text">
-                  {item.expiry_date ? `Expires: ${item.expiry_date.split("T")[0]}` : "No expiration date"}
+                <span className="expiry-indicator">
+                  {item.expiry_date ? `Expires: ${item.expiry_date.split("T")[0]}` : "No expiration specified"}
                 </span>
                 <button
-                  className="delete-icon-btn"
+                  className="action-icon-btn danger"
                   onClick={() => handleDeleteItem(item.pantry_item_id)}
-                  title="Remove item"
+                  title="Remove from pantry"
                 >
-                  🗑️
+                  <TrashIcon size={15} />
                 </button>
               </div>
             </div>
@@ -225,9 +254,9 @@ export default function PantryPage({ onOpenAuth }) {
         <div className="modal-backdrop" onClick={() => setShowAddModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Add Pantry Item</h3>
-              <button className="close-btn" onClick={() => setShowAddModal(false)}>
-                ✕
+              <h3>Add Pantry Ingredient</h3>
+              <button className="close-btn" onClick={() => setShowAddModal(false)} aria-label="Close modal">
+                <CloseIcon size={20} />
               </button>
             </div>
 
@@ -244,8 +273,9 @@ export default function PantryPage({ onOpenAuth }) {
                     const selected = ingredients.find((i) => i.ingredient_id === Number(e.target.value));
                     if (selected) setUnit(selected.default_unit || "g");
                   }}
+                  className="select-input"
                 >
-                  <option value="">-- Choose Ingredient --</option>
+                  <option value="">-- Choose from standard catalog --</option>
                   {ingredients.map((ing) => (
                     <option key={ing.ingredient_id} value={ing.ingredient_id}>
                       {ing.ingredient_name} ({ing.default_unit})
@@ -255,7 +285,7 @@ export default function PantryPage({ onOpenAuth }) {
               </div>
 
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>Quantity</label>
                   <input
                     type="number"
@@ -265,10 +295,11 @@ export default function PantryPage({ onOpenAuth }) {
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="e.g. 500"
+                    className="text-input"
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="form-group flex-1">
                   <label>Unit</label>
                   <input
                     type="text"
@@ -276,6 +307,7 @@ export default function PantryPage({ onOpenAuth }) {
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
                     placeholder="g, ml, piece"
+                    className="text-input"
                   />
                 </div>
               </div>
@@ -286,12 +318,18 @@ export default function PantryPage({ onOpenAuth }) {
                   type="date"
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
+                  className="text-input"
                 />
               </div>
 
-              <button type="submit" className="submit-btn">
-                Add to Pantry
-              </button>
+              <div className="modal-footer-actions">
+                <button type="button" className="secondary-btn" onClick={() => setShowAddModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn">
+                  Add to Pantry
+                </button>
+              </div>
             </form>
           </div>
         </div>
