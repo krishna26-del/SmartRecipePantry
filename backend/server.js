@@ -32,6 +32,7 @@ const authRoutes          = require('./routes/authRoutes');
 const recipeRoutes        = require('./routes/recipeRoutes');
 const categoryRoutes      = require('./routes/categoryRoutes');
 const ingredientRoutes    = require('./routes/ingredientRoutes');
+const dietaryTagRoutes    = require('./routes/dietaryTagRoutes');   // Phase 2
 const pantryRoutes        = require('./routes/pantryRoutes');
 const recommendationRoutes= require('./routes/recommendationRoutes');
 const shoppingListRoutes  = require('./routes/shoppingListRoutes');
@@ -99,6 +100,7 @@ app.use('/api/auth',           authRoutes);
 app.use('/api/recipes',        recipeRoutes);
 app.use('/api/categories',     categoryRoutes);
 app.use('/api/ingredients',    ingredientRoutes);
+app.use('/api/dietary-tags',   dietaryTagRoutes);  // Phase 2
 app.use('/api/pantry',         pantryRoutes);
 app.use('/api/recommendations',recommendationRoutes);
 app.use('/api/shopping-lists', shoppingListRoutes);
