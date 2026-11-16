@@ -1,122 +1,94 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState } from "react";
+import { AuthProvider } from "./context/AuthContext";
+import Navbar from "./components/Navbar";
+import AuthModal from "./components/AuthModal";
+import DashboardPage from "./pages/DashboardPage";
+import RecipesPage from "./pages/RecipesPage";
+import PantryPage from "./pages/PantryPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
+import ShoppingListPage from "./pages/ShoppingListPage";
+import FavoritesPage from "./pages/FavoritesPage";
+import MealPlanPage from "./pages/MealPlanPage";
+import CookingHistoryPage from "./pages/CookingHistoryPage";
+import FoodWastePage from "./pages/FoodWastePage";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+function AppContent() {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [selectedRecipeForDetail, setSelectedRecipeForDetail] = useState(null);
+
+  const handleSelectRecipeFromFavorites = (recipe) => {
+    setSelectedRecipeForDetail(recipe);
+    setActiveTab("recipes");
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-layout">
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenAuth={() => setAuthModalOpen(true)}
+      />
 
-      <div className="ticks"></div>
+      <main className="main-content">
+        {activeTab === "dashboard" && (
+          <DashboardPage
+            onOpenAuth={() => setAuthModalOpen(true)}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        )}
+        {activeTab === "recipes" && (
+          <RecipesPage
+            onOpenAuth={() => setAuthModalOpen(true)}
+            initialSelectedRecipe={selectedRecipeForDetail}
+          />
+        )}
+        {activeTab === "pantry" && (
+          <PantryPage onOpenAuth={() => setAuthModalOpen(true)} />
+        )}
+        {activeTab === "recommendations" && (
+          <RecommendationsPage
+            onOpenAuth={() => setAuthModalOpen(true)}
+            onNavigateToShopping={() => setActiveTab("shopping")}
+          />
+        )}
+        {activeTab === "shopping" && (
+          <ShoppingListPage onOpenAuth={() => setAuthModalOpen(true)} />
+        )}
+        {activeTab === "favorites" && (
+          <FavoritesPage
+            onOpenAuth={() => setAuthModalOpen(true)}
+            onSelectRecipe={handleSelectRecipeFromFavorites}
+          />
+        )}
+        {activeTab === "mealplans" && (
+          <MealPlanPage onOpenAuth={() => setAuthModalOpen(true)} />
+        )}
+        {activeTab === "history" && (
+          <CookingHistoryPage onOpenAuth={() => setAuthModalOpen(true)} />
+        )}
+        {activeTab === "waste" && (
+          <FoodWastePage onOpenAuth={() => setAuthModalOpen(true)} />
+        )}
+      </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+      />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <footer className="app-footer">
+        <p>Smart Recipe Pantry &copy; {new Date().getFullYear()} &bull; Cook smarter, waste less.</p>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}

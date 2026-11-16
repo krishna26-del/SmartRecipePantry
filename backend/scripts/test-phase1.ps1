@@ -1,6 +1,5 @@
-﻿# Phase 1 — Authentication Test Suite (v2)
-# Uses Invoke-WebRequest for reliable body access on error responses.
-# Run:  powershell -ExecutionPolicy Bypass -File test-phase1.ps1
+﻿# Phase 1 — Authentication Test Suite (Cleaned up)
+# Run: powershell -ExecutionPolicy Bypass -File backend/scripts/test-phase1.ps1
 
 $BASE = "http://localhost:5000/api"
 $PASS = 0; $FAIL = 0
@@ -19,19 +18,26 @@ function Invoke-API {
     $params = @{ Uri=$Url; Method=$Method; Headers=$headers; UseBasicParsing=$true; ErrorAction="Stop" }
     if ($BodyJson) { $params["Body"] = $BodyJson }
     $resp = Invoke-WebRequest @params
-    return @{ ok=$true; status=[int]$resp.StatusCode; body=($resp.Content | ConvertFrom-Json) }
+    $bodyObj = $null
+    if ($resp.Content) {
+      try { $bodyObj = $resp.Content | ConvertFrom-Json } catch {}
+    }
+    return @{ ok=$true; status=[int]$resp.StatusCode; body=$bodyObj; raw=$resp.Content }
   } catch {
-    $status = 0; $body = $null
+    $status = 0; $bodyObj = $null; $raw = ""
     if ($_.Exception.Response) {
       $status = [int]$_.Exception.Response.StatusCode
       try {
         $stream = $_.Exception.Response.GetResponseStream()
         $reader = New-Object System.IO.StreamReader($stream)
-        $raw    = $reader.ReadToEnd()
-        $body   = $raw | ConvertFrom-Json
+        $raw = $reader.ReadToEnd()
+        $bodyObj = $raw | ConvertFrom-Json
       } catch {}
     }
-    return @{ ok=$false; status=$status; body=$body }
+    if (-not $bodyObj -and $_.ErrorDetails) {
+      try { $bodyObj = $_.ErrorDetails.Message | ConvertFrom-Json } catch {}
+    }
+    return @{ ok=$false; status=$status; body=$bodyObj; raw=$raw }
   }
 }
 
@@ -79,7 +85,7 @@ $BAD = '{"name":"","email":"notanemail","password":"weak"}'
 $r3  = Invoke-API POST "$BASE/auth/register" -BodyJson $BAD
 Test-Result "HTTP 400"                     ($r3.status -eq 400)
 Test-Result "success = false"              ($r3.body.success -eq $false)
-Test-Result "errors array present"         ($r3.body.errors -ne $null -and $r3.body.errors.Count -gt 0)
+Test-Result "errors array present"         ($r3.body.errors.Count -gt 0)
 Write-Host ""
 
 # ── T5: Login success ─────────────────────────────────────────────────────────
@@ -137,7 +143,6 @@ Write-Host ""
 
 # ── T11: GET /me — expired token ─────────────────────────────────────────────
 Write-Host "[ T11 ] GET /api/auth/me — expired token"
-# Token with exp=1600000001 (year 2020 — always expired); signature will fail too
 $EXPIRED = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE2MDAwMDAwMDAsImV4cCI6MTYwMDAwMDAwMX0.invalidSig"
 $r10 = Invoke-API GET "$BASE/auth/me" -Token $EXPIRED
 Test-Result "HTTP 401"                     ($r10.status -eq 401)
@@ -151,22 +156,17 @@ Test-Result "HTTP 404"                     ($r11.status -eq 404)
 Test-Result "success = false"              ($r11.body.success -eq $false)
 Write-Host ""
 
-# ── T13: Password stored as hash (verify via login roundtrip) ─────────────────
-Write-Host "[ T13 ] Password stored as bcrypt hash (verified via login roundtrip)"
-# If the password was stored as plaintext, raw password comparison would work
-# but bcrypt compare would fail on a plaintext DB entry. The T5 login already
-# confirmed that bcrypt.compare() succeeded against the stored value.
+# ── T13: Password stored as bcrypt hash ───────────────────────────────────────
+Write-Host "[ T13 ] Password stored as bcrypt hash"
 Test-Result "Login worked => password is properly hashed" ($r4.ok -and $r4.body.success -eq $true)
 Write-Host ""
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 $TOTAL = $PASS + $FAIL
 Write-Host "══════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Results: $PASS / $TOTAL passed" -ForegroundColor $(if ($FAIL -eq 0) { "Green" } else { "Yellow" })
+Write-Host "  Results: $PASS / $TOTAL passed" -ForegroundColor $(if ($FAIL -eq 0) { "Green" } else { "Red" })
 if ($FAIL -eq 0) {
-  Write-Host "  ✅  All tests passed. Phase 1 complete!" -ForegroundColor Green
-} else {
-  Write-Host "  ❌  $FAIL test(s) failed — review output above." -ForegroundColor Red
+  Write-Host "  ✅ All tests passed. Phase 1 complete!" -ForegroundColor Green
 }
 Write-Host "══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
