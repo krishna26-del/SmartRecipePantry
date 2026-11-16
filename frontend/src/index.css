@@ -1,80 +1,120 @@
-/* ─── Global Design Tokens & Base CSS ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   RECIPE MANAGEMENT SYSTEM — Global Design Tokens & Base CSS
+   Theme: Professional Forest Green SaaS Dashboard
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  /* Color Palette - Forest & Sage SaaS Theme */
-  --color-primary: #1e3d2f;        /* Deep Forest Green */
-  --color-primary-hover: #162f24;  /* Darker Forest Green */
-  --color-primary-light: #285441;  /* Rich Forest */
-  
-  --color-secondary: #4a7c59;      /* Forest Sage */
-  --color-secondary-soft: #eaf2ed; /* Soft Sage Background */
+  /* ── Primary Color Ramp ──────────────────────────────────────────────── */
+  --color-primary:        #1e3d2f;   /* Deep Forest Green */
+  --color-primary-hover:  #162f24;   /* Darker Forest */
+  --color-primary-light:  #285441;   /* Rich Forest */
+  --color-primary-50:     #eaf2ed;   /* Softest Tint */
+  --color-primary-100:    #cfe0d4;   /* Light Tint */
+  --color-primary-200:    #9ec5ac;   /* Soft Tint */
+
+  /* ── Secondary / Sage ────────────────────────────────────────────────── */
+  --color-secondary:      #4a7c59;   /* Forest Sage */
+  --color-secondary-soft: #eaf2ed;   /* Sage Background */
   --color-secondary-border: #cfe0d4;
-  
-  --color-accent-amber: #d97706;   /* Subtle Warm Amber */
-  --color-accent-amber-soft: #fef3c7;
-  --color-accent-red: #dc2626;     /* Crimson */
-  --color-accent-red-soft: #fee2e2;
-  --color-accent-emerald: #059669; /* Fresh Emerald */
-  --color-accent-emerald-soft: #d1fae5;
 
-  /* Surfaces & Backgrounds */
-  --bg-app: #f4f7f5;               /* Warm Off-White Canvas */
-  --bg-sidebar: #172a22;           /* Deep Executive Forest Sidebar */
-  --bg-sidebar-hover: rgba(255, 255, 255, 0.08);
-  --bg-sidebar-active: #234637;    /* Active Sidebar Item Fill */
-  --bg-card: #ffffff;              /* Pure White Cards */
-  --bg-card-subtle: #f9fbf9;       /* Subtle Card Tint */
-  --bg-input: #ffffff;
-  --bg-modal-backdrop: rgba(14, 28, 21, 0.65);
+  /* ── Semantic Accent Colors ──────────────────────────────────────────── */
+  --color-amber:         #d97706;
+  --color-amber-soft:    #fef3c7;
+  --color-amber-border:  #fde68a;
+  --color-red:           #dc2626;
+  --color-red-soft:      #fee2e2;
+  --color-red-border:    #fca5a5;
+  --color-emerald:       #059669;
+  --color-emerald-soft:  #d1fae5;
+  --color-emerald-border:#a7f3d0;
+  --color-blue:          #2563eb;
+  --color-blue-soft:     #eff6ff;
+  --color-blue-border:   #bfdbfe;
 
-  /* Typography Colors */
-  --text-main: #17241d;            /* Dark Charcoal Main Text */
-  --text-muted: #586960;           /* Soft Gray-Green Muted */
-  --text-light: #87998f;           /* Dimmed Meta Text */
-  --text-sidebar: #c5d8cd;         /* Light Sage Sidebar Text */
-  --text-sidebar-active: #ffffff;  /* High Contrast White */
-  --text-sidebar-dim: #7f978a;     /* Section Label Dimmed */
+  /* ── App Surfaces ────────────────────────────────────────────────────── */
+  --bg-app:              #f3f6f4;    /* Warm Off-White Canvas */
+  --bg-card:             #ffffff;    /* Pure White Cards */
+  --bg-card-subtle:      #f9fbf9;    /* Subtle Card Tint */
+  --bg-input:            #ffffff;
+  --bg-hover:            #f1f5f2;    /* Hover State */
 
-  /* Borders & Dividers */
-  --border-light: #e3ede6;
-  --border-card: #e1ebe4;
-  --border-input: #cfded4;
-  --border-input-focus: #1e3d2f;
-  --border-sidebar: rgba(255, 255, 255, 0.08);
+  /* ── Sidebar ─────────────────────────────────────────────────────────── */
+  --bg-sidebar:          #172a22;    /* Deep Executive Forest */
+  --bg-sidebar-hover:    rgba(255,255,255,0.07);
+  --bg-sidebar-active:   #234637;    /* Active Item Fill */
+  --border-sidebar:      rgba(255,255,255,0.07);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(20, 45, 33, 0.04);
-  --shadow-md: 0 4px 12px -2px rgba(20, 45, 33, 0.06), 0 2px 4px -1px rgba(20, 45, 33, 0.03);
-  --shadow-lg: 0 12px 24px -4px rgba(20, 45, 33, 0.08), 0 4px 8px -2px rgba(20, 45, 33, 0.04);
-  --shadow-modal: 0 24px 48px -12px rgba(10, 25, 18, 0.25);
+  /* ── Typography ──────────────────────────────────────────────────────── */
+  --text-main:           #17241d;    /* Dark Charcoal */
+  --text-secondary:      #3d5247;    /* Medium Green-Gray */
+  --text-muted:          #586960;    /* Muted */
+  --text-light:          #87998f;    /* Dimmed Meta */
+  --text-sidebar:        #c5d8cd;    /* Sidebar Text */
+  --text-sidebar-active: #ffffff;    /* Active Sidebar Text */
+  --text-sidebar-muted:  #7a9087;    /* Sidebar Section Label */
+  --text-forest:         #1e3d2f;    /* Primary Color Text */
+  --text-amber:          #b45309;    /* Amber Text */
+  --text-crimson:        #b91c1c;    /* Red Text */
+  --text-emerald:        #047857;    /* Emerald Text */
 
-  /* Dimensions */
-  --sidebar-width: 260px;
-  --header-height-mobile: 60px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-full: 9999px;
+  /* ── Borders ─────────────────────────────────────────────────────────── */
+  --border-light:        #e3ede6;
+  --border-card:         #e1ebe4;
+  --border-input:        #cddbd2;
+  --border-input-focus:  #1e3d2f;
+  --border-muted:        #dde8e1;
 
-  /* Typography */
-  --font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* ── Shadows ─────────────────────────────────────────────────────────── */
+  --shadow-xs:  0 1px 2px rgba(20,45,33,0.04);
+  --shadow-sm:  0 1px 3px rgba(20,45,33,0.06), 0 1px 2px rgba(20,45,33,0.04);
+  --shadow-md:  0 4px 12px -2px rgba(20,45,33,0.08), 0 2px 4px -1px rgba(20,45,33,0.04);
+  --shadow-lg:  0 12px 24px -4px rgba(20,45,33,0.10), 0 4px 8px -2px rgba(20,45,33,0.05);
+  --shadow-modal: 0 24px 48px -12px rgba(10,25,18,0.28);
+  --shadow-sidebar: 2px 0 20px rgba(10,25,18,0.15);
+
+  /* ── Dimensions ──────────────────────────────────────────────────────── */
+  --sidebar-width:       260px;
+  --header-h-mobile:     60px;
+
+  /* ── Radii ───────────────────────────────────────────────────────────── */
+  --r-xs:   4px;
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-xl:   18px;
+  --r-2xl:  24px;
+  --r-full: 9999px;
+
+  /* ── Transitions ─────────────────────────────────────────────────────── */
+  --transition-fast:  all 0.15s ease;
+  --transition-base:  all 0.2s ease;
+  --transition-slow:  all 0.3s ease;
+
+  /* ── Typography Scale ────────────────────────────────────────────────── */
+  --font-family:  "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL RESET & BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 *, *::before, *::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html, body {
-  margin: 0;
-  padding: 0;
   width: 100%;
   min-height: 100vh;
   background-color: var(--bg-app);
   color: var(--text-main);
   font-family: var(--font-family);
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -107,4 +147,58 @@ input, select, textarea {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-main);
+}
+
+p {
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLBAR STYLING
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-primary-100); border-radius: var(--r-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary-200); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FOCUS STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

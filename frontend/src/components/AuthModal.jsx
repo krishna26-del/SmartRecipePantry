@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { CloseIcon } from "./Icons";
 
 export default function AuthModal({ isOpen, onClose }) {
   const [isRegister, setIsRegister] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName]       = useState("");
+  const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
@@ -29,46 +30,82 @@ export default function AuthModal({ isOpen, onClose }) {
       if (res.success) {
         onClose();
       } else {
-        setError(res.message || "Authentication failed");
+        setError(res.message || "Authentication failed. Please check your credentials.");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred");
+      setError(err.response?.data?.message || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const switchMode = () => {
+    setIsRegister((v) => !v);
+    setError("");
+    setName("");
+    setEmail("");
+    setPassword("");
+  };
+
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div
+      className="modal-backdrop"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={isRegister ? "Create Account" : "Sign In"}
+    >
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
         <div className="modal-header">
-          <h3>{isRegister ? "Create an Account" : "Welcome Back"}</h3>
-          <button className="close-btn" onClick={onClose}>
-            ✕
+          <div>
+            <h3>{isRegister ? "Create an Account" : "Welcome Back"}</h3>
+            <p className="modal-sub">
+              {isRegister
+                ? "Start managing your kitchen smarter."
+                : "Sign in to access your Recipe Management System."}
+            </p>
+          </div>
+          <button
+            className="close-btn"
+            onClick={onClose}
+            aria-label="Close authentication dialog"
+          >
+            <CloseIcon size={18} />
           </button>
         </div>
 
-        {error && <div className="alert-error">{error}</div>}
+        {/* Error Alert */}
+        {error && (
+          <div className="alert-error" role="alert">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
           {isRegister && (
             <div className="form-group">
-              <label>Full Name</label>
+              <label htmlFor="auth-name">Full Name</label>
               <input
+                id="auth-name"
                 type="text"
                 required
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Krishna"
+                placeholder="e.g. Alex Johnson"
               />
             </div>
           )}
 
           <div className="form-group">
-            <label>Email Address</label>
+            <label htmlFor="auth-email">Email Address</label>
             <input
+              id="auth-email"
               type="email"
               required
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="user@example.com"
@@ -76,33 +113,45 @@ export default function AuthModal({ isOpen, onClose }) {
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="auth-password">Password</label>
             <input
+              id="auth-password"
               type="password"
               required
+              autoComplete={isRegister ? "new-password" : "current-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
             />
           </div>
 
-          <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? "Processing..." : isRegister ? "Sign Up" : "Sign In"}
+          <button
+            type="submit"
+            id="auth-submit-btn"
+            className="submit-btn"
+            disabled={loading}
+          >
+            {loading
+              ? "Processing..."
+              : isRegister
+              ? "Create Account"
+              : "Sign In"}
           </button>
         </form>
 
-        <div className="modal-footer">
+        {/* Footer toggle */}
+        <div className="modal-footer" style={{ marginTop: "16px" }}>
           {isRegister ? (
             <p>
               Already have an account?{" "}
-              <button className="link-btn" onClick={() => setIsRegister(false)}>
+              <button className="link-btn" onClick={switchMode}>
                 Sign In
               </button>
             </p>
           ) : (
             <p>
-              Don't have an account?{" "}
-              <button className="link-btn" onClick={() => setIsRegister(true)}>
+              Don&apos;t have an account?{" "}
+              <button className="link-btn" onClick={switchMode}>
                 Sign Up
               </button>
             </p>
